@@ -1,11 +1,20 @@
 import { clearTracks, deleteTrack, getTracks, saveTrack } from "./db.js";
 import { AudioPlayer, formatClock, hashHue, parseId3 } from "./player.js";
-import { formatDuration, formatPace, RunSession, WakeLock } from "./run.js";
+import { Countdown, formatDuration, formatPace, playZeroBeep, RunSession, unlockBeep, WakeLock } from "./run.js";
 
 const els = {
   gpsBadge: document.getElementById("gps-badge"),
   installBtn: document.getElementById("install-btn"),
+  timeLabel: document.getElementById("time-label"),
   time: document.getElementById("time-display"),
+  minValue: document.getElementById("min-value"),
+  secValue: document.getElementById("sec-value"),
+  minUp: document.getElementById("min-up"),
+  minDown: document.getElementById("min-down"),
+  secUp: document.getElementById("sec-up"),
+  secDown: document.getElementById("sec-down"),
+  presets: document.querySelector(".presets"),
+  countdownSet: document.querySelector(".countdown-set"),
   distance: document.getElementById("distance-display"),
   pace: document.getElementById("pace-display"),
   avgPace: document.getElementById("avg-pace-display"),
@@ -55,10 +64,13 @@ const els = {
 
 const player = new AudioPlayer(els.audio);
 const run = new RunSession();
+const countdown = new Countdown();
 const wakeLock = new WakeLock();
 let seeking = false;
 let runStarted = false;
 let unlockTimer = 0;
+let setMinutes = Number(localStorage.getItem("stride-countdown-min")) || 0;
+let setSeconds = Number(localStorage.getItem("stride-countdown-sec")) || 0;
 
 function uid() {
   return crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
@@ -124,11 +136,36 @@ function escapeHtml(value) {
   })[char]);
 }
 
+function applyCountdown(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  setMinutes = Math.floor(total / 60);
+  setSeconds = total % 60;
+  localStorage.setItem("stride-countdown-min", String(setMinutes));
+  localStorage.setItem("stride-countdown-sec", String(setSeconds));
+  countdown.set(total * 1000);
+  renderSetter();
+  renderRun();
+}
+
+function renderSetter() {
+  els.minValue.textContent = String(setMinutes).padStart(2, "0");
+  els.secValue.textContent = String(setSeconds).padStart(2, "0");
+  els.countdownSet.classList.toggle("is-locked", runStarted);
+  els.presets.querySelectorAll(".preset-btn").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.min) === setMinutes && setSeconds === 0);
+  });
+}
+
 function renderRun() {
-  const elapsed = formatDuration(run.elapsed);
+  countdown.checkZero();
+  const usingCountdown = countdown.duration > 0;
+  const display = usingCountdown ? formatDuration(countdown.left) : formatDuration(run.elapsed);
   const km = run.distance / 1000;
-  els.time.textContent = elapsed;
-  els.lockTime.textContent = elapsed;
+  els.timeLabel.textContent = usingCountdown ? (countdown.finished ? "Time's up" : "Countdown") : "Time";
+  els.time.textContent = display;
+  els.time.classList.toggle("ending", usingCountdown && !countdown.finished && countdown.left <= 10000 && countdown.duration >= 10000);
+  els.time.classList.toggle("done", usingCountdown && countdown.finished);
+  els.lockTime.textContent = display;
   els.distance.innerHTML = `${km.toFixed(2)}<span>km</span>`;
   els.lockDistance.textContent = `${km.toFixed(2)} km`;
   els.pace.innerHTML = `${formatPace(run.currentPace)}<span>/km</span>`;
@@ -221,18 +258,25 @@ async function addFiles(fileList) {
 }
 
 async function startRun() {
+  unlockBeep();
   runStarted = true;
+  countdown.reset();
+  countdown.start();
   run.start();
   await wakeLock.request();
+  renderSetter();
   renderRun();
 }
 
 async function pauseOrResume() {
   if (run.running) {
     run.pause();
+    countdown.pause();
     await wakeLock.release();
   } else {
+    unlockBeep();
     run.start();
+    countdown.start();
     await wakeLock.request();
   }
   renderRun();
@@ -248,8 +292,11 @@ function finishRun() {
   showOverlay(els.summary);
   hideOverlay(els.lockScreen);
   runStarted = false;
+  countdown.pause();
+  countdown.reset();
   run.reset();
   wakeLock.release();
+  renderSetter();
   renderRun();
 }
 
@@ -260,6 +307,33 @@ player.onChange = () => {
 
 run.onUpdate = renderRun;
 run.onGps = renderGps;
+countdown.onZero = () => {
+  playZeroBeep();
+  renderRun();
+};
+
+els.minUp.addEventListener("click", () => {
+  unlockBeep();
+  applyCountdown((setMinutes + 1) * 60000 + setSeconds * 1000);
+});
+els.minDown.addEventListener("click", () => {
+  unlockBeep();
+  applyCountdown(Math.max(0, setMinutes - 1) * 60000 + setSeconds * 1000);
+});
+els.secUp.addEventListener("click", () => {
+  unlockBeep();
+  applyCountdown(setMinutes * 60000 + Math.min(50, setSeconds + 10) * 1000);
+});
+els.secDown.addEventListener("click", () => {
+  unlockBeep();
+  applyCountdown(setMinutes * 60000 + Math.max(0, setSeconds - 10) * 1000);
+});
+els.presets.addEventListener("click", (event) => {
+  const button = event.target.closest(".preset-btn");
+  if (!button) return;
+  unlockBeep();
+  applyCountdown(Number(button.dataset.min) * 60000);
+});
 
 els.addMusic.addEventListener("click", () => els.fileInput.click());
 els.fileInput.addEventListener("change", async () => {
@@ -351,6 +425,8 @@ document.addEventListener("visibilitychange", () => {
 setInterval(() => {
   if (runStarted) renderRun();
 }, 200);
+
+applyCountdown(setMinutes * 60000 + setSeconds * 1000);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js"));

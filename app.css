@@ -508,6 +508,89 @@ body.running .time-display {
   text-shadow: 0 0 28px rgba(200, 255, 61, 0.18);
 }
 
+.time-display.ending {
+  color: var(--danger);
+  animation: pulse-end 0.8s ease-in-out infinite;
+}
+
+.time-display.done {
+  color: var(--lime);
+}
+
+@keyframes pulse-end {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.countdown-set {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+
+.time-steppers {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepper {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-width: 72px;
+}
+
+.step-btn {
+  width: 48px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #1b2028;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.step-value {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.step-colon {
+  font-size: 1.8rem;
+  color: var(--muted);
+  padding-top: 18px;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.preset-btn {
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #1b2028;
+  font-weight: 650;
+}
+
+.preset-btn.active,
+.step-btn:active {
+  background: var(--lime);
+  color: #081000;
+  border-color: transparent;
+}
+
+.countdown-set.is-locked {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 @media (max-height: 740px) {
   .time-display {
     font-size: 3.1rem;

@@ -167,6 +167,103 @@ export class RunSession {
   }
 }
 
+export class Countdown {
+  constructor() {
+    this.duration = 0;
+    this.remaining = 0;
+    this.startedAt = null;
+    this.finished = false;
+    this.beeped = false;
+    this.onZero = () => {};
+  }
+
+  get running() {
+    return this.startedAt !== null;
+  }
+
+  get left() {
+    if (!this.startedAt) return this.remaining;
+    return Math.max(0, this.remaining - (Date.now() - this.startedAt));
+  }
+
+  set(ms) {
+    this.duration = Math.max(0, ms);
+    this.remaining = this.duration;
+    this.startedAt = null;
+    this.finished = false;
+    this.beeped = false;
+  }
+
+  start() {
+    if (this.duration <= 0 || this.finished || this.running) return;
+    this.startedAt = Date.now();
+  }
+
+  pause() {
+    if (!this.running) return;
+    this.remaining = this.left;
+    this.startedAt = null;
+    if (this.remaining <= 0) this.finish();
+  }
+
+  finish() {
+    this.startedAt = null;
+    this.remaining = 0;
+    this.finished = true;
+    if (!this.beeped) {
+      this.beeped = true;
+      this.onZero();
+    }
+  }
+
+  checkZero() {
+    if (this.running && this.left <= 0) this.finish();
+  }
+
+  reset() {
+    this.set(this.duration);
+  }
+}
+
+let beepContext = null;
+
+export function unlockBeep() {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+  if (!beepContext) beepContext = new AudioCtx();
+  if (beepContext.state === "suspended") beepContext.resume();
+}
+
+export function playZeroBeep() {
+  unlockBeep();
+  if (!beepContext) return;
+
+  const ctx = beepContext;
+  const now = ctx.currentTime;
+  const hits = [0, 0.32, 0.64, 1.05];
+
+  hits.forEach((offset, index) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = index === hits.length - 1 ? 660 : 880;
+    const start = now + offset;
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(0.28, start + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.22);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + 0.24);
+  });
+
+  try {
+    navigator.vibrate?.([200, 80, 200, 80, 280]);
+  } catch {
+    /* ignore */
+  }
+}
+
 export class WakeLock {
   constructor() {
     this.sentinel = null;

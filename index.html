@@ -47,8 +47,33 @@
       </header>
 
       <section class="metrics" aria-label="Run metrics">
-        <p class="metric-label">Time</p>
+        <p id="time-label" class="metric-label">Time</p>
         <p id="time-display" class="time-display">00:00:00</p>
+        <div class="countdown-set" aria-label="Set countdown">
+          <div class="time-steppers">
+            <div class="stepper">
+              <button id="min-up" class="step-btn" type="button" aria-label="Add one minute">+</button>
+              <p id="min-value" class="step-value">00</p>
+              <button id="min-down" class="step-btn" type="button" aria-label="Subtract one minute">−</button>
+              <p class="metric-label">Min</p>
+            </div>
+            <span class="step-colon" aria-hidden="true">:</span>
+            <div class="stepper">
+              <button id="sec-up" class="step-btn" type="button" aria-label="Add 10 seconds">+</button>
+              <p id="sec-value" class="step-value">00</p>
+              <button id="sec-down" class="step-btn" type="button" aria-label="Subtract 10 seconds">−</button>
+              <p class="metric-label">Sec</p>
+            </div>
+          </div>
+          <div class="presets" role="group" aria-label="Countdown presets">
+            <button class="preset-btn" type="button" data-min="5">5</button>
+            <button class="preset-btn" type="button" data-min="10">10</button>
+            <button class="preset-btn" type="button" data-min="15">15</button>
+            <button class="preset-btn" type="button" data-min="20">20</button>
+            <button class="preset-btn" type="button" data-min="30">30</button>
+            <button class="preset-btn" type="button" data-min="45">45</button>
+          </div>
+        </div>
         <div class="metric-grid">
           <div class="metric-card">
             <p class="metric-label">Distance</p>
