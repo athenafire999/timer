@@ -1,17 +1,17 @@
-const CACHE = "stride-v2";
+const CACHE = "stride-v3";
 const ASSETS = [
   "./",
   "./index.html",
-  "./css/app.css",
-  "./js/app.js",
-  "./js/db.js",
-  "./js/player.js",
-  "./js/run.js",
+  "./app.css",
+  "./app.js",
+  "./db.js",
+  "./player.js",
+  "./run.js",
   "./manifest.webmanifest",
-  "./icons/icon.svg",
-  "./icons/icon-180.png",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icon.svg",
+  "./icon-180.png",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
