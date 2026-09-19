@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no"
+    />
+    <meta name="theme-color" content="#07080a" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Stride" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta
+      name="description"
+      content="A running MP3 player with a workout timer and kilometre tracking for iPhone."
+    />
+    <title>Stride</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/icon-180.png" />
+    <link rel="stylesheet" href="./css/app.css" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <p class="eyebrow">Run player</p>
+            <h1>Stride</h1>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button id="gps-badge" class="pill" type="button" aria-live="polite">
+            GPS off
+          </button>
+          <button id="install-btn" class="icon-btn" type="button" aria-label="Add to iPhone home screen">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3v12" />
+              <path d="m8 7 4-4 4 4" />
+              <path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="metrics" aria-label="Run metrics">
+        <p class="metric-label">Time</p>
+        <p id="time-display" class="time-display">00:00:00</p>
+        <div class="metric-grid">
+          <div class="metric-card">
+            <p class="metric-label">Distance</p>
+            <p id="distance-display" class="metric-value">0.00<span>km</span></p>
+          </div>
+          <div class="metric-card">
+            <p class="metric-label">Pace</p>
+            <p id="pace-display" class="metric-value">--:--<span>/km</span></p>
+          </div>
+          <div class="metric-card">
+            <p class="metric-label">Avg pace</p>
+            <p id="avg-pace-display" class="metric-value">--:--<span>/km</span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="player card" aria-label="Music player">
+        <div class="now-playing">
+          <div id="artwork" class="artwork" aria-hidden="true">♪</div>
+          <div class="track-copy">
+            <p id="track-title" class="track-title">Add your run playlist</p>
+            <p id="track-artist" class="track-artist">MP3s stay on this phone</p>
+          </div>
+        </div>
+        <div class="seek-wrap">
+          <input id="seek" type="range" min="0" max="1000" value="0" aria-label="Song position" />
+          <div class="seek-times">
+            <span id="current-time">0:00</span>
+            <span id="duration-time">0:00</span>
+          </div>
+        </div>
+        <div class="transport">
+          <button id="shuffle-btn" class="ghost-btn" type="button" aria-pressed="false" aria-label="Shuffle">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m18 14 4 4-4 4" />
+              <path d="m18 2 4 4-4 4" />
+              <path d="M2 18h2a4 4 0 0 0 3.2-1.6L12 12" />
+              <path d="M2 6h2a4 4 0 0 1 3.2 1.6L10 10" />
+              <path d="M14 14 20 18" />
+              <path d="M14 10 20 6" />
+            </svg>
+          </button>
+          <button id="prev-btn" class="round-btn" type="button" aria-label="Previous track">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 5v14" />
+              <path d="M18 5 8 12l10 7z" />
+            </svg>
+          </button>
+          <button id="play-btn" class="play-btn" type="button" aria-label="Play">
+            <svg id="play-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <svg id="pause-icon" class="hidden" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 5h4v14H7zM13 5h4v14h-4z" />
+            </svg>
+          </button>
+          <button id="next-btn" class="round-btn" type="button" aria-label="Next track">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18 5v14" />
+              <path d="M6 5l10 7-10 7z" />
+            </svg>
+          </button>
+          <button id="repeat-btn" class="ghost-btn" type="button" aria-pressed="false" aria-label="Repeat">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M17 1l4 4-4 4" />
+              <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+              <path d="M7 23l-4-4 4-4" />
+              <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+            </svg>
+          </button>
+        </div>
+      </section>
+
+      <section class="run-actions" aria-label="Run controls">
+        <button id="start-btn" class="primary-btn" type="button">Start run</button>
+        <div id="active-actions" class="active-actions hidden">
+          <button id="pause-run-btn" class="primary-btn" type="button">Pause</button>
+          <div class="split-actions">
+            <button id="lap-btn" class="secondary-btn" type="button">Lap</button>
+            <button id="lock-btn" class="secondary-btn" type="button">Lock</button>
+            <button id="finish-btn" class="danger-btn" type="button">Finish</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="library card" aria-label="Playlist">
+        <div class="library-head">
+          <div>
+            <p class="eyebrow">Playlist</p>
+            <h2 id="library-count">No tracks yet</h2>
+          </div>
+          <div class="library-actions">
+            <button id="add-music-btn" class="secondary-btn" type="button">Add MP3s</button>
+            <button id="clear-library-btn" class="text-btn" type="button">Clear</button>
+          </div>
+        </div>
+        <input id="file-input" type="file" accept="audio/mpeg,audio/mp3,audio/mp4,audio/aac,audio/wav,audio/*" multiple hidden />
+        <ul id="track-list" class="track-list"></ul>
+        <ol id="lap-list" class="lap-list" hidden></ol>
+      </section>
+    </div>
+
+    <div id="lock-screen" class="overlay hidden" role="dialog" aria-labelledby="lock-time" aria-hidden="true">
+      <div class="lock-panel">
+        <p class="eyebrow">Run locked</p>
+        <p id="lock-time" class="time-display">00:00:00</p>
+        <p id="lock-distance" class="lock-distance">0.00 km</p>
+        <p id="lock-track" class="lock-track">—</p>
+        <button id="lock-play-btn" class="play-btn lock-play" type="button" aria-label="Play or pause music">
+          <svg id="lock-play-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          <svg id="lock-pause-icon" class="hidden" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 5h4v14H7zM13 5h4v14h-4z" />
+          </svg>
+        </button>
+        <button id="unlock-btn" class="unlock-btn" type="button">Hold to unlock</button>
+      </div>
+    </div>
+
+    <div id="summary-sheet" class="overlay hidden" role="dialog" aria-labelledby="summary-title" aria-hidden="true">
+      <div class="sheet">
+        <p class="eyebrow">Run complete</p>
+        <h2 id="summary-title">Nice work</h2>
+        <div class="summary-grid">
+          <div>
+            <p class="metric-label">Time</p>
+            <p id="summary-time" class="metric-value">00:00:00</p>
+          </div>
+          <div>
+            <p class="metric-label">Distance</p>
+            <p id="summary-distance" class="metric-value">0.00 km</p>
+          </div>
+          <div>
+            <p class="metric-label">Avg pace</p>
+            <p id="summary-pace" class="metric-value">--:-- /km</p>
+          </div>
+          <div>
+            <p class="metric-label">Laps</p>
+            <p id="summary-laps" class="metric-value">0</p>
+          </div>
+        </div>
+        <button id="summary-close" class="primary-btn" type="button">Done</button>
+      </div>
+    </div>
+
+    <div id="install-sheet" class="overlay hidden" role="dialog" aria-labelledby="install-title" aria-hidden="true">
+      <div class="sheet">
+        <p class="eyebrow">iPhone</p>
+        <h2 id="install-title">Add Stride to your Home Screen</h2>
+        <ol class="help-list">
+          <li>Open this page in Safari.</li>
+          <li>Tap the Share button.</li>
+          <li>Tap <strong>Add to Home Screen</strong>.</li>
+          <li>Allow location when you start a run if you want kilometres.</li>
+        </ol>
+        <p class="hint">
+          Put MP3s in the Files app first. Apple Music songs cannot be used here, but downloaded MP3s can.
+        </p>
+        <button id="install-close" class="primary-btn" type="button">Got it</button>
+      </div>
+    </div>
+
+    <audio id="audio" playsinline preload="metadata"></audio>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>
